@@ -118,12 +118,20 @@ if (!exists("get_default_style_manager")) {
 # Create default data manager if needed
 if (!exists("get.default.data.manager")) {
   get.default.data.manager <- function() {
-    # Return a mock data manager that won't pull real data
-    list(
-      pull = function(...) NULL,
-      outcome.info = list(),
-      source.info = list()
-    )
+    # Return the data manager from the loaded workspace
+    if (exists("RW.DATA.MANAGER", envir = .GlobalEnv)) {
+      return(RW.DATA.MANAGER)
+    } else {
+      # Fallback to mock data manager if workspace doesn't have it
+      warning("RW.DATA.MANAGER not found in workspace, using mock data manager")
+      mock_manager <- list(
+        pull = function(...) NULL,
+        outcome.info = list(),
+        source.info = list()
+      )
+      class(mock_manager) <- "jheem.data.manager"
+      return(mock_manager)
+    }
   }
 }
 

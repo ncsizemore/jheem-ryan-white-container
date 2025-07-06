@@ -6,8 +6,10 @@ cat("📦 Loading batch plot dependencies...\n")
 
 # First, ensure we have the jheem2_interactive path available
 # In container, we'll copy these files during build
-plotting_deps_dir <- if (file.exists("/app/plotting_deps")) {
-  "/app/plotting_deps"
+plotting_deps_dir <- if (file.exists("/app/plotting/plotting_deps")) {
+  "/app/plotting/plotting_deps"
+} else if (file.exists("plotting/plotting_deps")) {
+  "plotting/plotting_deps"
 } else {
   # Fallback for local testing
   "plotting_deps"

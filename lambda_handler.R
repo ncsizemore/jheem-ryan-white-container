@@ -57,6 +57,9 @@ cat("✅ 'rw' version successfully restored\n")
 # Load plotting utilities
 source("plotting_minimal.R")
 
+# Load plotting dependencies from batch generator
+source("plotting/batch_dependencies.R")
+
 # Load simulation pipeline modules
 source("simulation/interventions.R")
 source("simulation/runner.R") 
@@ -118,7 +121,9 @@ handle_simulation_request <- function(event, context) {
     
     # Step 4: Generate plots
     cat("📊 Generating plots...\n")
-    plots <- generate_simulation_plots(results, city, parameters)
+    # Note: base_simset is the baseline simulation that the intervention was applied to
+    # We pass it for comparison plots showing baseline vs intervention
+    plots <- generate_simulation_plots(results, city, parameters, base_simset)
     
     # Return success response
     response <- list(

@@ -43,7 +43,7 @@ test_simulation_pipeline <- function(base_simulation_path = "/app/test_base_sim.
     
     # Step 4: Test plot generation
     cat("  📊 Testing plot generation...\n")
-    plots <- generate_simulation_plots(results, test_city, test_parameters)
+    plots <- generate_simulation_plots(results, test_city, test_parameters, base_simset)
     cat("    ✅ Plots generated\n")
     
     # Return test results

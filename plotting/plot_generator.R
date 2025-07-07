@@ -14,23 +14,8 @@
 #' Get key plot configurations for Ryan White simulations
 #' @return List of plot configurations
 get_key_plot_configurations <- function() {
-  # Define the 10 key plots we want to generate
+  # Define key plots based on available Ryan White outcomes
   list(
-    list(name = "incidence_unfaceted", 
-         outcome = "incidence", 
-         statistic_type = "mean.and.interval", 
-         facet_choice = NULL),
-    
-    list(name = "incidence_by_sex", 
-         outcome = "incidence", 
-         statistic_type = "mean.and.interval", 
-         facet_choice = "sex"),
-    
-    list(name = "incidence_by_race", 
-         outcome = "incidence", 
-         statistic_type = "mean.and.interval", 
-         facet_choice = "race"),
-    
     list(name = "diagnosed_prevalence_unfaceted", 
          outcome = "diagnosed.prevalence", 
          statistic_type = "mean.and.interval", 
@@ -41,28 +26,43 @@ get_key_plot_configurations <- function() {
          statistic_type = "mean.and.interval", 
          facet_choice = "sex"),
     
-    list(name = "suppression_unfaceted", 
-         outcome = "suppression", 
+    list(name = "adap_clients_unfaceted", 
+         outcome = "adap.clients", 
          statistic_type = "mean.and.interval", 
          facet_choice = NULL),
     
-    list(name = "suppression_by_sex", 
-         outcome = "suppression", 
-         statistic_type = "mean.and.interval", 
-         facet_choice = "sex"),
-    
-    list(name = "new_infections_unfaceted", 
-         outcome = "new.infections", 
+    list(name = "non_adap_clients_unfaceted", 
+         outcome = "non.adap.clients", 
          statistic_type = "mean.and.interval", 
          facet_choice = NULL),
     
-    list(name = "mortality_unfaceted", 
-         outcome = "hiv.mortality", 
+    list(name = "oahs_clients_unfaceted", 
+         outcome = "oahs.clients", 
          statistic_type = "mean.and.interval", 
          facet_choice = NULL),
     
-    list(name = "prep_coverage_unfaceted", 
-         outcome = "prep.uptake", 
+    list(name = "adap_proportion_unfaceted", 
+         outcome = "adap.proportion", 
+         statistic_type = "mean.and.interval", 
+         facet_choice = NULL),
+    
+    list(name = "oahs_suppression_unfaceted", 
+         outcome = "oahs.suppression", 
+         statistic_type = "mean.and.interval", 
+         facet_choice = NULL),
+    
+    list(name = "adap_suppression_unfaceted", 
+         outcome = "adap.suppression", 
+         statistic_type = "mean.and.interval", 
+         facet_choice = NULL),
+    
+    list(name = "adap_proportion_of_diagnosed_unfaceted", 
+         outcome = "adap.proportion.of.diagnosed", 
+         statistic_type = "mean.and.interval", 
+         facet_choice = NULL),
+    
+    list(name = "adap_suppressed_proportion_of_diagnosed_unfaceted", 
+         outcome = "adap.suppressed.proportion.of.diagnosed", 
          statistic_type = "mean.and.interval", 
          facet_choice = NULL)
   )

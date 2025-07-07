@@ -4,6 +4,9 @@
 
 cat("📦 Loading batch plot dependencies...\n")
 
+# Load required libraries
+library(locations)  # For get.location.name function
+
 # First, ensure we have the jheem2_interactive path available
 # In container, we'll copy these files during build
 plotting_deps_dir <- if (file.exists("/app/plotting/plotting_deps")) {

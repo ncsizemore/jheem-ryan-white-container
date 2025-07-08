@@ -163,12 +163,17 @@ COPY --from=workspace-builder /app/ryan_white_workspace.RData ./
 # Copy runtime scripts and modules from container directory
 COPY lambda_handler.R ./
 COPY plotting_minimal.R ./
+COPY batch_plot_generator.R ./
+COPY container_entrypoint.sh ./
 COPY simulation/ ./simulation/
 COPY plotting/ ./plotting/
 COPY tests/ ./tests/
 
 # Copy test base simulation for local testing
 COPY test_base_sim.rdata ./
+
+# Make entry point executable
+RUN chmod +x container_entrypoint.sh
 
 # Test that workspace loads correctly in final container
 RUN R --slave -e "\
@@ -185,9 +190,10 @@ RUN R --slave -e "\
   quit(status = 1); \
   }"
 
-# Set up for Lambda runtime
+# Set up for flexible runtime
 EXPOSE 8080
-CMD ["R", "--slave", "-e", "source('lambda_handler.R')"]
+ENTRYPOINT ["./container_entrypoint.sh"]
+CMD ["lambda"]
 
 # =============================================================================
 # Build Instructions:

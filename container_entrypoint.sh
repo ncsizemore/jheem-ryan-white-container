@@ -36,6 +36,10 @@ case "$1" in
       cat('✅ RW.DATA.MANAGER available:', exists('RW.DATA.MANAGER'), '\n')
     "
     ;;
+  "debug")
+    echo "🐛 Starting debug shell"
+    exec /bin/bash
+    ;;
   *)
     echo "Usage: $0 {lambda|batch|custom|test-batch|test-workspace} [args...]"
     echo ""
@@ -45,6 +49,7 @@ case "$1" in
     echo "  custom       - Alias for lambda mode"
     echo "  test-batch   - Test batch plotting dependencies"
     echo "  test-workspace - Test workspace loading"
+    echo "  debug        - Start interactive bash shell"
     echo ""
     echo "Examples:"
     echo "  $0 lambda                    # Custom simulation mode"

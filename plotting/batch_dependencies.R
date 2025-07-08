@@ -25,7 +25,8 @@ required_files <- c(
   "plot_data_preparation.R",
   "plot_rendering.R",
   "baseline_loading.R",
-  "load_config.R"
+  "load_config.R",
+  "plotly_helpers.R"
 )
 
 for (file in required_files) {

@@ -32,6 +32,8 @@ RUN apt-get update && apt-get install -y \
   cmake \
   libabsl-dev \
   default-jdk \
+  python3 \
+  python3-pip \
   git \
   && rm -rf /var/lib/apt/lists/* \
   && ARCH_LIB_DIR=$(dpkg-architecture -q DEB_HOST_MULTIARCH) \

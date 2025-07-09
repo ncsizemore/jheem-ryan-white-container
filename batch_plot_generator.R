@@ -33,19 +33,32 @@ cat("✅ Workspace loaded with", length(ls()), "objects\n")
 cat("✅ RW.SPECIFICATION available:", exists('RW.SPECIFICATION'), "\n")
 cat("✅ RW.DATA.MANAGER available:", exists('RW.DATA.MANAGER'), "\n")
 
-# CONTAINER MODIFICATION: Source required dependencies from container's plotting directory
+# CONTAINER MODIFICATION: Set up data manager function
+# This ensures we use the correct data manager from the workspace
+get.default.data.manager <- function() {
+  # Container prioritizes WEB.DATA.MANAGER for real-world data points
+  # but keeps RW.DATA.MANAGER as fallback for compatibility
+  if (exists("WEB.DATA.MANAGER", envir = .GlobalEnv)) {
+    return(WEB.DATA.MANAGER)
+  } else if (exists("RW.DATA.MANAGER", envir = .GlobalEnv)) {
+    return(RW.DATA.MANAGER)
+  } else {
+    warning("No data manager found in workspace (checked WEB.DATA.MANAGER, RW.DATA.MANAGER)")
+    return(NULL)
+  }
+}
+
+# Source required utils and components (done once)
 tryCatch(
   {
-    # Use container's existing plotting dependencies
+    # CONTAINER MODIFICATION: Adjust paths for container directory structure
     source("plotting/plotting_deps/simplot_local_mods.R")
     source("plotting/plotting_deps/plotting_local.R")
     source("plotting/plotting_deps/load_config.R")
+    source("plotting/plotting_deps/plot_panel.R")
     source("plotting/plotting_deps/plot_data_preparation.R")
     source("plotting/plotting_deps/plot_rendering.R")
     source("plotting/plotting_deps/baseline_loading.R")
-    
-    # Also load the batch dependencies which sets up mock functions
-    source("plotting/batch_dependencies.R")
   },
   error = function(e) {
     cat(sprintf("ERROR: Failed to source required files: %s\n", e$message))

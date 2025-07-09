@@ -5,7 +5,7 @@
 cat("📦 Loading batch plot dependencies...\n")
 
 # Load required libraries
-library(locations)  # For get.location.name function
+library(locations) # For get.location.name function
 
 # First, ensure we have the jheem2_interactive path available
 # In container, we'll copy these files during build
@@ -21,7 +21,7 @@ plotting_deps_dir <- if (file.exists("/app/plotting/plotting_deps")) {
 # Load required dependencies in order
 required_files <- c(
   "simplot_local_mods.R",
-  "plotting_local.R", 
+  "plotting_local.R",
   "plot_data_preparation.R",
   "plot_rendering.R",
   "baseline_loading.R",
@@ -33,14 +33,17 @@ for (file in required_files) {
   file_path <- file.path(plotting_deps_dir, file)
   if (file.exists(file_path)) {
     cat("  Loading", file, "...")
-    tryCatch({
-      source(file_path)
-      cat(" ✅\n")
-    }, error = function(e) {
-      cat(" ❌\n")
-      cat("    Error:", e$message, "\n")
-      warning(paste("Failed to load", file, "- plotting may fail"))
-    })
+    tryCatch(
+      {
+        source(file_path)
+        cat(" ✅\n")
+      },
+      error = function(e) {
+        cat(" ❌\n")
+        cat("    Error:", e$message, "\n")
+        warning(paste("Failed to load", file, "- plotting may fail"))
+      }
+    )
   } else {
     cat("  ❌ Missing file:", file_path, "\n")
     warning(paste("Required file not found:", file))
@@ -69,11 +72,28 @@ get_component_config <- function(component) {
 #' @param page Page name (e.g., "custom")
 #' @return Configuration list or NULL
 get_page_complete_config <- function(page) {
-  # Return minimal config needed for plotting
+  # Return config with proper scenario labels
   return(list(
     selectors = list(
       scenario = list(
-        options = list()
+        options = list(
+          "base" = list(
+            id = "base",
+            label = "Baseline"
+          ),
+          "cessation" = list(
+            id = "cessation",
+            label = "Cessation"
+          ),
+          "brief_interruption" = list(
+            id = "brief_interruption",
+            label = "Brief Interruption"
+          ),
+          "prolonged_interruption" = list(
+            id = "prolonged_interruption",
+            label = "Prolonged Interruption"
+          )
+        )
       )
     )
   ))
@@ -87,19 +107,27 @@ if (!exists("get_default_style_manager")) {
       linewidth.slope = 0.5,
       alpha.ribbon = 0.2,
       linetype.sim.by = "simset",
-      shape.sim.by = "simset", 
+      shape.sim.by = "simset",
       color.sim.by = "simset",
       shape.data.by = "source",
       color.data.by = "source",
       shade.data.by = "source",
       get.sim.colors = function(n) {
-        if (n <= 0) return(character(0))
-        if (n == 1) return("#E41A1C")
-        if (n == 2) return(c("#E41A1C", "#377EB8"))
+        if (n <= 0) {
+          return(character(0))
+        }
+        if (n == 1) {
+          return("#E41A1C")
+        }
+        if (n == 2) {
+          return(c("#E41A1C", "#377EB8"))
+        }
         return(scales::hue_pal()(n))
       },
       get.data.colors = function(n) {
-        if (n <= 0) return(character(0))
+        if (n <= 0) {
+          return(character(0))
+        }
         return(rep("#333333", n))
       },
       get.shapes = function(n) {
@@ -111,8 +139,12 @@ if (!exists("get_default_style_manager")) {
         rep(types, length.out = n)
       },
       get.shades = function(base.color, n) {
-        if (n <= 0) return(character(0))
-        if (n == 1) return(base.color)
+        if (n <= 0) {
+          return(character(0))
+        }
+        if (n == 1) {
+          return(base.color)
+        }
         scales::alpha(base.color, seq(1, 0.3, length.out = n))
       }
     )
@@ -175,12 +207,12 @@ get.default.data.manager <- function() {
   # 1. WEB.DATA.MANAGER (production)
   # 2. RW.DATA.MANAGER (development/testing)
   # 3. NULL (fallback - will cause plotting to fail gracefully)
-  
+
   if (exists("WEB.DATA.MANAGER", envir = .GlobalEnv)) {
     cat("  📡 Using WEB.DATA.MANAGER (production)\n")
     return(WEB.DATA.MANAGER)
   } else if (exists("RW.DATA.MANAGER", envir = .GlobalEnv)) {
-    cat("  🧪 Using RW.DATA.MANAGER (development/testing)\n") 
+    cat("  🧪 Using RW.DATA.MANAGER (development/testing)\n")
     return(RW.DATA.MANAGER)
   } else {
     warning("No data manager found in workspace (checked WEB.DATA.MANAGER, RW.DATA.MANAGER)")

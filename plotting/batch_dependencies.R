@@ -203,12 +203,17 @@ cat("🔧 Setting up workspace data manager...\n")
 # Override the default data manager to use our workspace data manager
 # This allows us to easily control which data manager is used
 get.default.data.manager <- function() {
-  # Container should only use WEB.DATA.MANAGER for real-world data points
+  # Container prioritizes WEB.DATA.MANAGER for real-world data points
+  # but keeps RW.DATA.MANAGER as fallback for compatibility
   if (exists("WEB.DATA.MANAGER", envir = .GlobalEnv)) {
     cat("  📡 Using WEB.DATA.MANAGER (with real-world data points)\n")
     return(WEB.DATA.MANAGER)
+  } else if (exists("RW.DATA.MANAGER", envir = .GlobalEnv)) {
+    cat("  🧪 Using RW.DATA.MANAGER (fallback - may not have real-world data overlay)\n")
+    return(RW.DATA.MANAGER)
   } else {
-    stop("WEB.DATA.MANAGER not found in workspace - container requires web data manager for real-world data overlay")
+    warning("No data manager found in workspace (checked WEB.DATA.MANAGER, RW.DATA.MANAGER)")
+    return(NULL)
   }
 }
 

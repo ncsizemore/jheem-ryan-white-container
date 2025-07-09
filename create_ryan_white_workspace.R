@@ -64,21 +64,16 @@ tryCatch(
   }
 )
 
-# 3.5. Load web data manager for container (overwrites RW.DATA.MANAGER with web version)
+# 3.5. Load web data manager for container use (in addition to RW.DATA.MANAGER)
 cat("🌐 Loading web data manager for container use...\n")
 tryCatch(
   {
-    WEB.DATA.MANAGER <- load.data.manager('../jheem_analyses/cached/ryan.white.web.data.manager.rdata', set.as.default = F)
-    # Remove the regular data manager to avoid confusion in batch_dependencies.R
-    if (exists("RW.DATA.MANAGER")) {
-      rm(RW.DATA.MANAGER)
-    }
-    cat("✅ Web data manager loaded and RW.DATA.MANAGER removed\n")
+    WEB.DATA.MANAGER <- load.data.manager("../jheem_analyses/cached/ryan.white.web.data.manager.rdata", set.as.default = TRUE)
+    cat("✅ Web data manager loaded (RW.DATA.MANAGER kept for compatibility)\n")
   },
   error = function(e) {
     cat("❌ ERROR loading web data manager:", e$message, "\n")
-    # Keep the regular one if web loading fails
-    cat("⚠️  Falling back to regular data manager\n")
+    cat("⚠️  Will use RW.DATA.MANAGER as fallback\n")
   }
 )
 

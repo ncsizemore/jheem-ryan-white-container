@@ -51,7 +51,7 @@ ryan_white_spec_file <- "../jheem_analyses/applications/ryan_white/ryan_white_sp
 
 
 
-# 3. Source Ryan White model specification
+# 3. Source Ryan White model specification (loads RW.DATA.MANAGER)
 cat("🧬 Loading Ryan White model specification...\n")
 tryCatch(
   {
@@ -61,6 +61,24 @@ tryCatch(
   error = function(e) {
     cat("❌ ERROR loading specification:", e$message, "\n")
     quit(status = 1)
+  }
+)
+
+# 3.5. Load web data manager for container (overwrites RW.DATA.MANAGER with web version)
+cat("🌐 Loading web data manager for container use...\n")
+tryCatch(
+  {
+    WEB.DATA.MANAGER <- load.data.manager('../jheem_analyses/cached/ryan.white.web.data.manager.rdata', set.as.default = F)
+    # Remove the regular data manager to avoid confusion in batch_dependencies.R
+    if (exists("RW.DATA.MANAGER")) {
+      rm(RW.DATA.MANAGER)
+    }
+    cat("✅ Web data manager loaded and RW.DATA.MANAGER removed\n")
+  },
+  error = function(e) {
+    cat("❌ ERROR loading web data manager:", e$message, "\n")
+    # Keep the regular one if web loading fails
+    cat("⚠️  Falling back to regular data manager\n")
   }
 )
 

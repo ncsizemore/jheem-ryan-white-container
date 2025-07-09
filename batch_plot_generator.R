@@ -27,9 +27,11 @@ for (fn in internal_fns) {
 }
 
 # CONTAINER MODIFICATION: Use workspace data instead of sourcing ryan_white_specification.R
-cat("Loading workspace data (ryan white specification already loaded)...\n")
-# The ryan white specification is already loaded in the container workspace
-# No need to source it again
+cat("Loading workspace data...\n")
+load('ryan_white_workspace.RData')
+cat("✅ Workspace loaded with", length(ls()), "objects\n")
+cat("✅ RW.SPECIFICATION available:", exists('RW.SPECIFICATION'), "\n")
+cat("✅ RW.DATA.MANAGER available:", exists('RW.DATA.MANAGER'), "\n")
 
 # CONTAINER MODIFICATION: Source required dependencies from container's plotting directory
 tryCatch(

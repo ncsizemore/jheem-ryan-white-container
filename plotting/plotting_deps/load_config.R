@@ -3,25 +3,44 @@ library(yaml)
 # Environment for caching loaded configurations
 .config_cache <- new.env(parent = emptyenv())
 
+# CONTAINER MODIFICATION: Function to get config base path
+get_config_base_path <- function() {
+    # Check if we're in container environment
+    if (file.exists("/app/plotting/config")) {
+        return("/app/plotting/config")
+    } else if (file.exists("plotting/config")) {
+        return("plotting/config")
+    } else if (file.exists("src/ui/config")) {
+        # Fallback for interactive environment
+        return("src/ui/config")
+    } else {
+        stop("Could not find config directory in any expected location")
+    }
+}
+
 #' Load YAML configuration file
-#' @param path Path to YAML file
+#' @param path Path to YAML file (relative to config base)
 #' @return List containing configuration
 load_yaml_file <- function(path) {
+    # Build full path using config base
+    config_base <- get_config_base_path()
+    full_path <- file.path(config_base, path)
+    
     # Debug print
-    print(paste("Attempting to load:", path))
+    print(paste("Attempting to load:", full_path))
 
     # Check if file exists
-    if (!isTRUE(file.exists(path))) {
-        stop(sprintf("Configuration file not found: %s", path))
+    if (!isTRUE(file.exists(full_path))) {
+        stop(sprintf("Configuration file not found: %s", full_path))
     }
 
     # Load and parse YAML
     tryCatch(
         {
-            yaml::read_yaml(path)
+            yaml::read_yaml(full_path)
         },
         error = function(e) {
-            stop(sprintf("Error reading YAML file %s: %s", path, e$message))
+            stop(sprintf("Error reading YAML file %s: %s", full_path, e$message))
         }
     )
 }
@@ -34,7 +53,7 @@ get_base_config <- function() {
         return(.config_cache$base)
     } else {
         # print("Loading and caching base config")
-        config <- load_yaml_file("src/ui/config/base.yaml")
+        config <- load_yaml_file("base.yaml")  # Now relative to config base
         .config_cache$base <- config
         return(config)
     }
@@ -126,7 +145,7 @@ get_component_config <- function(component) {
 
     # Load from file if not designated for caching or not found in cache
     # print(paste("Loading config for component:", component))
-    path <- file.path("src", "ui", "config", "components", paste0(component, ".yaml"))
+    path <- file.path("components", paste0(component, ".yaml"))  # Now relative to config base
     config <- load_yaml_file(path)
 
     # Handle dynamic outcomes if this is the controls component
@@ -160,7 +179,7 @@ get_defaults_config <- function() {
         return(.config_cache$defaults)
     } else {
         # print("Loading and caching defaults config")
-        config <- load_yaml_file("src/ui/config/defaults.yaml")
+        config <- load_yaml_file("defaults.yaml")  # Now relative to config base
         .config_cache$defaults <- config
         return(config)
     }
@@ -173,12 +192,9 @@ get_page_config <- function(page) {
     # Debug print
     print(paste("Loading config for page:", page))
 
-    path <- file.path("src", "ui", "config", "pages", paste0(page, ".yaml"))
-    if (!file.exists(path)) {
-        stop(sprintf("Configuration file not found for page: %s", page))
-    }
-
-    load_yaml_file(path)
+    path <- file.path("pages", paste0(page, ".yaml"))  # Now relative to config base
+    config <- load_yaml_file(path)
+    return(config)
 }
 
 #' Get complete configuration for a page

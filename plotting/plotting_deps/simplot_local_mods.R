@@ -480,9 +480,13 @@ prepare_plot_local <- function(simset.list = NULL,
                     # CONTAINER FIX: Force failure for specific outcomes known to have ontology mapping issues
                     # This makes container behave like interactive by triggering the retry path
                     if (!is.null(initial_append_attrs) && initial_append_attrs == "url") {
+                        # DEBUG: Log the outcome name to understand why condition isn't matching
+                        cat("DEBUG: current_data_outcome_name_for_pull =", current_data_outcome_name_for_pull, "\n")
+                        
                         # Only force failure for outcomes that are known to be problematic
                         # Based on our investigation: testing/proportion.tested has sex ontology mismatches
                         if (current_data_outcome_name_for_pull == "proportion.tested") {
+                            cat("DEBUG: Forcing failure for proportion.tested\n")
                             # Force the same failure that interactive experiences
                             # This triggers the retry without URLs, which works correctly
                             stop("'arr' must be an array or matrix")

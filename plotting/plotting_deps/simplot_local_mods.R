@@ -475,7 +475,24 @@ prepare_plot_local <- function(simset.list = NULL,
                     # Attempt 1: Pull with initial append.attributes
                     attempt1_args <- base_pull_args
                     attempt1_args$append.attributes <- initial_append_attrs
-                    do.call(data.manager$pull, attempt1_args)
+                    result <- do.call(data.manager$pull, attempt1_args)
+                    
+                    # CONTAINER FIX: Force failure for outcomes that would cause ontology mapping issues
+                    # This makes container behave like interactive by triggering the retry path
+                    if (!is.null(initial_append_attrs) && initial_append_attrs == "url") {
+                        # Check if this outcome is known to have ontology mapping issues
+                        # We detect this by checking if the current outcome needs ontology alignment
+                        if (plot.which == "sim.and.data" && 
+                            !is.null(outcome.ontologies) && 
+                            current_sim_outcome_name %in% names(outcome.ontologies)) {
+                            
+                            # Force the same failure that interactive experiences
+                            # This triggers the retry without URLs, which works correctly
+                            stop("'arr' must be an array or matrix")
+                        }
+                    }
+                    
+                    result
                 },
                 error = function(e) {
                     # Check if the failure might be due to appending URL

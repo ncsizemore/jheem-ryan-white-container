@@ -28,7 +28,7 @@ render_plot <- function(plot_data, current_settings) {
 
       # Get plot args from reactive data
       plot_args_final <- plot_data$plot_args
-      plot_args_final$append.url <- FALSE # TESTING: Disable append.url to see if this fixes the issue
+      plot_args_final$append.url <- TRUE # Enable append.url (fix is now in simplot_local_mods.R)
       # Explicitly set title to NULL to prevent simplot from adding one # REMOVED THIS LINE
       # print("[PLOT PANEL - ggplotly] Setting title = NULL in simplot args.") # REMOVED THIS LINE
 

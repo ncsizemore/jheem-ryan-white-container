@@ -475,6 +475,18 @@ prepare_plot_local <- function(simset.list = NULL,
                     # Attempt 1: Pull with initial append.attributes
                     attempt1_args <- base_pull_args
                     attempt1_args$append.attributes <- initial_append_attrs
+                    
+                    # DEBUG: Log the exact parameters being passed
+                    cat("=== DEBUG: CONTAINER DATA MANAGER PULL ===\n")
+                    cat("Outcome:", current_data_outcome_name_for_pull, "\n")
+                    cat("Append attributes:", initial_append_attrs, "\n")
+                    cat("Target ontology:", if(is.null(attempt1_args$target.ontology)) "NULL" else "PROVIDED", "\n")
+                    if(!is.null(attempt1_args$target.ontology)) {
+                        cat("Target ontology sex:", attempt1_args$target.ontology$sex, "\n")
+                    }
+                    cat("Allow mapping:", attempt1_args$allow.mapping.from.target.ontology, "\n")
+                    cat("=== END DEBUG ===\n")
+                    
                     result <- do.call(data.manager$pull, attempt1_args)
                     
                     # CONTAINER FIX: Force failure for specific outcomes known to have ontology mapping issues

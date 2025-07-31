@@ -487,23 +487,27 @@ prepare_plot_local <- function(simset.list = NULL,
                     cat("Allow mapping:", attempt1_args$allow.mapping.from.target.ontology, "\n")
                     cat("=== END DEBUG ===\n")
                     
+                    # BROWSER DEBUG: Pause execution to inspect live state during failure
+                    cat("=== ABOUT TO CALL DATA MANAGER - ENTERING BROWSER ===\n")
+                    browser()
+                    
                     result <- do.call(data.manager$pull, attempt1_args)
                     
-                    # CONTAINER FIX: Force failure for specific outcomes known to have ontology mapping issues
-                    # This makes container behave like interactive by triggering the retry path
-                    if (!is.null(initial_append_attrs) && initial_append_attrs == "url") {
-                        # DEBUG: Log the outcome name to understand why condition isn't matching
-                        cat("DEBUG: current_data_outcome_name_for_pull =", current_data_outcome_name_for_pull, "\n")
-                        
-                        # Only force failure for outcomes that are known to be problematic
-                        # Based on our investigation: testing/proportion.tested has sex ontology mismatches
-                        if (current_data_outcome_name_for_pull == "proportion.tested") {
-                            cat("DEBUG: Forcing failure for proportion.tested\n")
-                            # Force the same failure that interactive experiences
-                            # This triggers the retry without URLs, which works correctly
-                            stop("'arr' must be an array or matrix")
-                        }
-                    }
+                    # CONTAINER FIX: COMMENTED OUT FOR BROWSER DEBUGGING
+                    # This artificial fix was masking the real issue - let's see natural behavior
+                    # if (!is.null(initial_append_attrs) && initial_append_attrs == "url") {
+                    #     # DEBUG: Log the outcome name to understand why condition isn't matching
+                    #     cat("DEBUG: current_data_outcome_name_for_pull =", current_data_outcome_name_for_pull, "\n")
+                    #     
+                    #     # Only force failure for outcomes that are known to be problematic
+                    #     # Based on our investigation: testing/proportion.tested has sex ontology mismatches
+                    #     if (current_data_outcome_name_for_pull == "proportion.tested") {
+                    #         cat("DEBUG: Forcing failure for proportion.tested\n")
+                    #         # Force the same failure that interactive experiences
+                    #         # This triggers the retry without URLs, which works correctly
+                    #         stop("'arr' must be an array or matrix")
+                    #     }
+                    # }
                     
                     result
                 },

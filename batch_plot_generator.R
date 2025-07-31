@@ -28,10 +28,10 @@ for (fn in internal_fns) {
 
 # CONTAINER MODIFICATION: Use workspace data instead of sourcing ryan_white_specification.R
 cat("Loading workspace data...\n")
-load('ryan_white_workspace.RData')
+load("ryan_white_workspace.RData")
 cat("✅ Workspace loaded with", length(ls()), "objects\n")
-cat("✅ RW.SPECIFICATION available:", exists('RW.SPECIFICATION'), "\n")
-cat("✅ RW.DATA.MANAGER available:", exists('RW.DATA.MANAGER'), "\n")
+cat("✅ RW.SPECIFICATION available:", exists("RW.SPECIFICATION"), "\n")
+cat("✅ RW.DATA.MANAGER available:", exists("RW.DATA.MANAGER"), "\n")
 
 # CONTAINER MODIFICATION: Set up data manager function
 # This ensures we use the correct data manager from the workspace
@@ -93,7 +93,7 @@ parser$add_argument("--json-only", action = "store_true", default = TRUE, help =
 parser$add_argument("--include-html", action = "store_true", default = FALSE, help = "Also generate HTML files (for development/testing)")
 
 # Parse arguments
-args <- parser$parse_args()
+# args <- parser$parse_args()
 
 # Parse comma-separated values
 parse_csv <- function(value) {
@@ -130,7 +130,7 @@ load_job_config <- function() {
     if (is.null(args$city)) {
       stop("Either --city or --config must be specified")
     }
-    
+
     if (is.null(args$outcomes)) {
       stop("--outcomes must be specified when not using --config")
     }

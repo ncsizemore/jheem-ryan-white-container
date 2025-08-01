@@ -99,20 +99,20 @@ WORKDIR /app
 
 # Clone jheem_analyses at specific commit
 RUN echo "📦 Cloning jheem_analyses at commit ${JHEEM_ANALYSES_COMMIT}..." && \
-    git clone https://github.com/tfojo1/jheem_analyses.git jheem_analyses/ && \
-    cd jheem_analyses && \
-    git checkout ${JHEEM_ANALYSES_COMMIT} && \
-    echo "✅ jheem_analyses cloned successfully"
+  git clone https://github.com/tfojo1/jheem_analyses.git jheem_analyses/ && \
+  cd jheem_analyses && \
+  git checkout ${JHEEM_ANALYSES_COMMIT} && \
+  echo "✅ jheem_analyses cloned successfully"
 
 # Download cached data files from OneDrive using metadata
 RUN cd jheem_analyses && \
-    mkdir -p cached && \
-    echo "📦 Generating download commands from metadata..." && \
-    R --slave -e "load('commoncode/data_manager_cache_metadata.Rdata'); for(file in names(cache.metadata)) { cat('wget -O cached/', file, ' \"', cache.metadata[[file]][['onedrive.link']], '\"\n', sep='') }" > download_commands.sh && \
-    echo "📥 Downloading cached data files..." && \
-    bash download_commands.sh && \
-    echo "✅ Downloaded files:" && \
-    ls -la cached/
+  mkdir -p cached && \
+  echo "📦 Generating download commands from metadata..." && \
+  R --slave -e "load('commoncode/data_manager_cache_metadata.Rdata'); for(file in names(cache.metadata)) { cat('wget -O cached/', file, ' \"', cache.metadata[[file]][['onedrive.link']], '\"\n', sep='') }" > download_commands.sh && \
+  echo "📥 Downloading cached data files..." && \
+  bash download_commands.sh && \
+  echo "✅ Downloaded files:" && \
+  ls -la cached/
 
 # TODO: Remove this manual copy when google_mobility_data.Rdata 
 # is added to the official cache metadata system
@@ -166,6 +166,7 @@ COPY --from=workspace-builder /app/ryan_white_workspace.RData ./
 COPY lambda_handler.R ./
 COPY plotting_minimal.R ./
 COPY batch_plot_generator.R ./
+COPY restore_jheem2_state.R ./
 COPY container_entrypoint.sh ./
 COPY simulation/ ./simulation/
 COPY plotting/ ./plotting/

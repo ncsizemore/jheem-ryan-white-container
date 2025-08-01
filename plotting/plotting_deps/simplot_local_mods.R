@@ -487,7 +487,9 @@ prepare_plot_local <- function(simset.list = NULL,
                     cat("Allow mapping:", attempt1_args$allow.mapping.from.target.ontology, "\n")
                     cat("=== END DEBUG ===\n")
                     
+                    cat("=== FIRST ATTEMPT (with URLs) ===\n")
                     result <- do.call(data.manager$pull, attempt1_args)
+                    cat("=== FIRST ATTEMPT SUCCEEDED ===\n")
                     
                     result
                 },
@@ -501,11 +503,14 @@ prepare_plot_local <- function(simset.list = NULL,
                         # Attempt 2: Retry pull with append.attributes = NULL
                         retry_args <- base_pull_args
                         retry_args$append.attributes <- NULL
+                        cat("=== RETRY ATTEMPT (without URLs) ===\n")
                         outcome.data.retry <- tryCatch(
                             {
                                 do.call(data.manager$pull, retry_args)
                             },
                             error = function(e_retry) {
+                                cat("=== RETRY ATTEMPT FAILED ===\n")
+                                cat("Retry error:", e_retry$message, "\n")
                                 # If retry also fails, handle based on show.data.pull.error
                                 if (show.data.pull.error) {
                                     stop(paste0(error.prefix, "Retry failed for '", current_data_outcome_name_for_pull, "': ", e_retry$message))

@@ -33,6 +33,12 @@ cat("✅ Workspace loaded with", length(ls()), "objects\n")
 cat("✅ RW.SPECIFICATION available:", exists("RW.SPECIFICATION"), "\n")
 cat("✅ RW.DATA.MANAGER available:", exists("RW.DATA.MANAGER"), "\n")
 
+# CONTAINER MODIFICATION: Restore jheem2 internal state from workspace
+source("restore_jheem2_state.R")
+if (exists("restore_jheem2_state")) {
+  restore_jheem2_state()
+}
+
 # CONTAINER MODIFICATION: Set up data manager function
 # This ensures we use the correct data manager from the workspace
 get.default.data.manager <- function() {

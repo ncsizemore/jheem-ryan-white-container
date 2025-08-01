@@ -488,7 +488,15 @@ prepare_plot_local <- function(simset.list = NULL,
                     cat("=== END DEBUG ===\n")
                     
                     cat("=== FIRST ATTEMPT (with URLs) ===\n")
-                    result <- do.call(data.manager$pull, attempt1_args)
+                    result <- tryCatch({
+                        do.call(data.manager$pull, attempt1_args)
+                    }, error = function(e) {
+                        cat("=== FIRST ATTEMPT FAILED ===\n")
+                        cat("Error message:", e$message, "\n")
+                        cat("Error class:", class(e), "\n")
+                        # Re-throw the error to maintain normal flow
+                        stop(e)
+                    })
                     cat("=== FIRST ATTEMPT SUCCEEDED ===\n")
                     
                     result
@@ -506,7 +514,12 @@ prepare_plot_local <- function(simset.list = NULL,
                         cat("=== RETRY ATTEMPT (without URLs) ===\n")
                         outcome.data.retry <- tryCatch(
                             {
-                                do.call(data.manager$pull, retry_args)
+                                result_retry <- do.call(data.manager$pull, retry_args)
+                                cat("=== RETRY ATTEMPT SUCCEEDED ===\n")
+                                if (!is.null(result_retry)) {
+                                    cat("Retry result sex dimensions:", paste(dimnames(result_retry)$sex, collapse=", "), "\n")
+                                }
+                                result_retry
                             },
                             error = function(e_retry) {
                                 cat("=== RETRY ATTEMPT FAILED ===\n")

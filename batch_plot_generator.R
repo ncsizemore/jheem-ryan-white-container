@@ -93,7 +93,7 @@ parser$add_argument("--json-only", action = "store_true", default = TRUE, help =
 parser$add_argument("--include-html", action = "store_true", default = FALSE, help = "Also generate HTML files (for development/testing)")
 
 # Parse arguments
-# args <- parser$parse_args()
+args <- parser$parse_args()
 
 # Parse comma-separated values
 parse_csv <- function(value) {

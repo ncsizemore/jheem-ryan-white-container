@@ -96,8 +96,8 @@ if (length(missing_objects) > 0) {
   quit(status = 1)
 }
 
-# 4.5 Capture VERSION.MANAGER state after registration
-cat("\n📦 Capturing JHEEM2 VERSION.MANAGER state...\n")
+# 4.5 Capture VERSION.MANAGER and ONTOLOGY.MAPPING.MANAGER state after registration
+cat("\n📦 Capturing JHEEM2 internal state...\n")
 
 # Get VERSION.MANAGER
 vm <- asNamespace("jheem2")$VERSION.MANAGER
@@ -113,9 +113,21 @@ if (!("versions" %in% ls(vm, all.names = TRUE) && "rw" %in% vm$versions)) {
 
 cat("  ✅ 'rw' version is registered\n")
 
-# Create the hidden object with the state
+# Get ONTOLOGY.MAPPING.MANAGER
+ont_mgr <- get("ONTOLOGY.MAPPING.MANAGER", envir = asNamespace("jheem2"))
+cat("  📊 Ontology mappings found:", length(ont_mgr$mappings), "\n")
+if (length(ont_mgr$mappings) > 0) {
+  cat("  🔍 Mapping names:", paste(names(ont_mgr$mappings), collapse = ", "), "\n")
+}
+
+# Create the hidden object with both states
 .jheem2_state <- list(
   version_manager = as.list(vm),
+  ontology_mapping_manager = list(
+    mappings = ont_mgr$mappings,
+    cached.one.way.mappings = ont_mgr$cached.one.way.mappings,
+    cached.two.way.mappings = ont_mgr$cached.two.way.mappings
+  ),
   captured_at = Sys.time(),
   jheem2_version = packageVersion("jheem2")
 )
@@ -123,8 +135,9 @@ cat("  ✅ 'rw' version is registered\n")
 # Save to global environment
 assign(".jheem2_state", .jheem2_state, envir = .GlobalEnv)
 
-cat("  ✅ VERSION.MANAGER state captured in .jheem2_state\n")
+cat("  ✅ Internal state captured in .jheem2_state\n")
 cat("  📊 Captured", length(.jheem2_state$version_manager), "VERSION.MANAGER elements\n")
+cat("  📊 Captured", length(.jheem2_state$ontology_mapping_manager$mappings), "ontology mappings\n")
 
 # =============================================================
 # CORRECTED VERSION of Sections 5 and 6

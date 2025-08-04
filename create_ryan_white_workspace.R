@@ -120,14 +120,10 @@ if (length(ont_mgr$mappings) > 0) {
   cat("  🔍 Mapping names:", paste(names(ont_mgr$mappings), collapse = ", "), "\n")
 }
 
-# Create the hidden object with both states
+# Create the hidden object with both states using consistent approach
 .jheem2_state <- list(
   version_manager = as.list(vm),
-  ontology_mapping_manager = list(
-    mappings = ont_mgr$mappings,
-    cached.one.way.mappings = ont_mgr$cached.one.way.mappings,
-    cached.two.way.mappings = ont_mgr$cached.two.way.mappings
-  ),
+  ontology_mapping_manager = as.list(ont_mgr),  # Consistent with version_manager approach
   captured_at = Sys.time(),
   jheem2_version = packageVersion("jheem2")
 )
@@ -137,7 +133,10 @@ assign(".jheem2_state", .jheem2_state, envir = .GlobalEnv)
 
 cat("  ✅ Internal state captured in .jheem2_state\n")
 cat("  📊 Captured", length(.jheem2_state$version_manager), "VERSION.MANAGER elements\n")
-cat("  📊 Captured", length(.jheem2_state$ontology_mapping_manager$mappings), "ontology mappings\n")
+cat("  📊 Captured", length(.jheem2_state$ontology_mapping_manager), "ONTOLOGY.MAPPING.MANAGER elements\n")
+if ("mappings" %in% names(.jheem2_state$ontology_mapping_manager)) {
+  cat("  📊 Including", length(.jheem2_state$ontology_mapping_manager$mappings), "ontology mappings\n")
+}
 
 # =============================================================
 # CORRECTED VERSION of Sections 5 and 6

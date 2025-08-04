@@ -47,6 +47,15 @@ for (name in names(saved_state)) {
 
 cat("✅ Restored", length(saved_state), "VERSION.MANAGER elements\n")
 
+# Restore ONTOLOGY.MAPPING.MANAGER using consistent approach
+cat("🔧 Restoring ONTOLOGY.MAPPING.MANAGER...\n")
+ont_mgr <- get("ONTOLOGY.MAPPING.MANAGER", envir = jheem2_ns)
+ont_state <- .jheem2_state$ontology_mapping_manager
+for (name in names(ont_state)) {
+  assign(name, ont_state[[name]], envir = ont_mgr)
+}
+cat("✅ Restored", length(ont_state), "ONTOLOGY.MAPPING.MANAGER elements\n")
+
 # Verify restoration
 if (!("versions" %in% ls(vm, all.names = TRUE) && "rw" %in% vm$versions)) {
   stop("FATAL: 'rw' version not found after VERSION.MANAGER restoration")

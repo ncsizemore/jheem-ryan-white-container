@@ -166,7 +166,6 @@ COPY --from=workspace-builder /app/ryan_white_workspace.RData ./
 COPY lambda_handler.R ./
 COPY plotting_minimal.R ./
 COPY batch_plot_generator.R ./
-COPY restore_jheem2_state.R ./
 COPY container_entrypoint.sh ./
 COPY simulation/ ./simulation/
 COPY plotting/ ./plotting/

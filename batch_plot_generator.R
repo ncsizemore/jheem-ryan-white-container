@@ -34,9 +34,16 @@ cat("✅ RW.SPECIFICATION available:", exists("RW.SPECIFICATION"), "\n")
 cat("✅ RW.DATA.MANAGER available:", exists("RW.DATA.MANAGER"), "\n")
 
 # CONTAINER MODIFICATION: Restore jheem2 internal state from workspace
-source("restore_jheem2_state.R")
-if (exists("restore_jheem2_state")) {
-  restore_jheem2_state()
+# Restore VERSION.MANAGER
+vm <- asNamespace("jheem2")$VERSION.MANAGER  
+for (name in names(.jheem2_state$version_manager)) {
+  assign(name, .jheem2_state$version_manager[[name]], envir = vm)
+}
+
+# Restore ONTOLOGY.MAPPING.MANAGER using consistent approach
+ont_mgr <- get("ONTOLOGY.MAPPING.MANAGER", envir = asNamespace("jheem2"))
+for (name in names(.jheem2_state$ontology_mapping_manager)) {
+  assign(name, .jheem2_state$ontology_mapping_manager[[name]], envir = ont_mgr)
 }
 
 # CONTAINER MODIFICATION: Set up data manager function
@@ -99,7 +106,10 @@ parser$add_argument("--json-only", action = "store_true", default = TRUE, help =
 parser$add_argument("--include-html", action = "store_true", default = FALSE, help = "Also generate HTML files (for development/testing)")
 
 # Parse arguments
-args <- parser$parse_args()
+# args <- parser$parse_args()
+
+debug_args <- c("--city", "C.12580", "--scenarios", "cessation", "--outcomes", "testing", "--facets", "sex", "--statistics", "mean.and.interval", "--include-html")
+args <- parser$parse_args(debug_args)
 
 # Parse comma-separated values
 parse_csv <- function(value) {

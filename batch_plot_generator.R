@@ -141,6 +141,23 @@ load_job_config <- function() {
       stop(sprintf("Config file not found: %s", args$config))
     }
     config <- yaml::read_yaml(args$config)
+    
+    # Process facets in YAML config to convert "none" to NULL
+    for (i in seq_along(config$jobs)) {
+      if (!is.null(config$jobs[[i]]$facets)) {
+        # Convert each facet string using the same logic as command line args
+        processed_facets <- lapply(config$jobs[[i]]$facets, function(spec) {
+          if (spec == "none" || spec == "None") {
+            return(NULL)
+          }
+          # Handle multi-facet combinations (e.g. "sex+age")  
+          facets <- trimws(strsplit(as.character(spec), "\\+")[[1]])
+          if (length(facets) == 1) facets[1] else facets
+        })
+        config$jobs[[i]]$facets <- processed_facets
+      }
+    }
+    
     return(config$jobs)
   } else {
     # Build from command line arguments

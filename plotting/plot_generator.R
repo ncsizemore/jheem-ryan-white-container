@@ -56,13 +56,28 @@ get_key_plot_configurations <- function() {
          statistic_type = "mean.and.interval", 
          facet_choice = NULL),
     
-    list(name = "adap_proportion_of_diagnosed_unfaceted", 
-         outcome = "adap.proportion.of.diagnosed", 
+    list(name = "rw_clients_unfaceted", 
+         outcome = "rw.clients", 
          statistic_type = "mean.and.interval", 
          facet_choice = NULL),
     
-    list(name = "adap_suppressed_proportion_of_diagnosed_unfaceted", 
-         outcome = "adap.suppressed.proportion.of.diagnosed", 
+    list(name = "new_diagnoses_unfaceted", 
+         outcome = "new", 
+         statistic_type = "mean.and.interval", 
+         facet_choice = NULL),
+    
+    list(name = "prep_uptake_unfaceted", 
+         outcome = "prep.uptake", 
+         statistic_type = "mean.and.interval", 
+         facet_choice = NULL),
+    
+    list(name = "awareness_unfaceted", 
+         outcome = "awareness", 
+         statistic_type = "mean.and.interval", 
+         facet_choice = NULL),
+    
+    list(name = "testing_unfaceted", 
+         outcome = "testing", 
          statistic_type = "mean.and.interval", 
          facet_choice = NULL)
   )

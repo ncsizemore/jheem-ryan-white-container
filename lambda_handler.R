@@ -24,7 +24,8 @@ cat("✅ RW.SPECIFICATION available:", exists("RW.SPECIFICATION"), "\n")
 
 # Load required packages for simulation execution
 library(distributions)  # For generate.random.samples function
-cat("✅ Distributions package loaded\n")
+library(locations)       # For get.location.name function
+cat("✅ Required packages loaded\n")
 
 # Restore VERSION.MANAGER state from hidden object
 cat("🔧 Restoring 'rw' model version from saved state...\n")
@@ -66,8 +67,39 @@ cat("✅ 'rw' version successfully restored\n")
 # Load plotting utilities
 source("plotting_minimal.R")
 
-# Load plotting dependencies from batch generator
-source("plotting/batch_dependencies.R")
+# Load plotting dependencies (using same pattern as batch_plot_generator.R)
+tryCatch(
+  {
+    source("plotting/plotting_deps/simplot_local_mods.R")
+    source("plotting/plotting_deps/plotting_local.R")
+    source("plotting/plotting_deps/load_config.R")
+    source("plotting/plotting_deps/plot_panel.R")
+    source("plotting/plotting_deps/plot_data_preparation.R")
+    source("plotting/plotting_deps/plot_rendering.R")
+    source("plotting/plotting_deps/baseline_loading.R")
+    cat("✅ Plotting dependencies loaded\n")
+  },
+  error = function(e) {
+    cat("❌ Error loading plotting dependencies:", e$message, "\n")
+    # Continue anyway - plotting might still work with minimal dependencies
+  }
+)
+
+# Set up data manager function (same as batch_plot_generator.R)
+get.default.data.manager <- function() {
+  # Container prioritizes WEB.DATA.MANAGER for real-world data points
+  # but keeps RW.DATA.MANAGER as fallback for compatibility
+  if (exists("WEB.DATA.MANAGER", envir = .GlobalEnv)) {
+    cat("  📡 Using WEB.DATA.MANAGER (with real-world data points)\n")
+    return(WEB.DATA.MANAGER)
+  } else if (exists("RW.DATA.MANAGER", envir = .GlobalEnv)) {
+    cat("  🧪 Using RW.DATA.MANAGER (fallback - may not have real-world data overlay)\n")
+    return(RW.DATA.MANAGER)
+  } else {
+    warning("No data manager found in workspace (checked WEB.DATA.MANAGER, RW.DATA.MANAGER)")
+    return(NULL)
+  }
+}
 
 # Load simulation pipeline modules
 source("simulation/interventions.R")
@@ -172,28 +204,19 @@ handle_simulation_request <- function(event, context) {
 if (interactive() || !exists("lambda_runtime")) {
   cat("🧪 Testing handler locally...\n")
   
-  # Test the complete pipeline
-  test_results <- test_simulation_pipeline("/app/test_base_sim.rdata")
-  
-  if (test_results$success) {
-    cat("📤 Running handler test...\n")
-    
-    test_event <- list(
-      city = "C.12580",
-      base_simulation_path = "/app/test_base_sim.rdata",
-      parameters = list(
-        adap_suppression_loss = 50,
-        oahs_suppression_loss = 30,
-        other_suppression_loss = 40
-      )
+  test_event <- list(
+    city = "C.12580",
+    base_simulation_path = "/app/test_base_sim.rdata",
+    parameters = list(
+      adap_suppression_loss = 50,
+      oahs_suppression_loss = 30,
+      other_suppression_loss = 40
     )
-    
-    result <- handle_simulation_request(test_event, NULL)
-    cat("📤 Handler result:\n")
-    cat(substr(result, 1, 500), "...\n")  # Show first 500 chars
-  } else {
-    cat("❌ Pipeline test failed, skipping handler test\n")
-  }
+  )
+  
+  result <- handle_simulation_request(test_event, NULL)
+  cat("📤 Handler result:\n")
+  cat(substr(result, 1, 500), "...\n")  # Show first 500 chars
 }
 
 cat("✅ Ryan White Lambda handler ready\n")

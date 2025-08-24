@@ -101,9 +101,8 @@ get.default.data.manager <- function() {
   }
 }
 
-# Load simulation pipeline modules
-source("simulation/interventions.R")
-source("simulation/runner.R") 
+# Load simplified simulation pipeline
+source("simulation/simple_ryan_white.R")
 source("plotting/plot_generator.R")
 
 # Load test module

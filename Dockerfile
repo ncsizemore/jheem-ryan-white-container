@@ -75,9 +75,9 @@ RUN echo "📦 Pre-installing problematic packages from source..." && \
 
 
 # Install packages: problematic ones from source, others as binaries
-# Exclude sf since it was pre-installed from source (RSPM binary needs different GDAL version)
+# Exclude packages that were pre-installed (RSPM binaries need different system lib versions)
 RUN  echo "📦 Installing remaining packages as binaries..." && \
-  R -e "renv::restore(exclude = 'sf')" && \
+  R -e "renv::restore(exclude = c('sf', 'units', 'gert', 'V8'))" && \
   echo "✅ All packages installed successfully"
 
 # Test that all packages are working

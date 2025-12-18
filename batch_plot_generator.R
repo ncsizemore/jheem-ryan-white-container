@@ -104,6 +104,7 @@ parser$add_argument("--api-gateway-id", type = "character", help = "API Gateway 
 parser$add_argument("--api-base-url", type = "character", help = "Full API base URL (alternative to api-gateway-id)")
 parser$add_argument("--json-only", action = "store_true", default = TRUE, help = "Generate only JSON files (default: true for production)")
 parser$add_argument("--include-html", action = "store_true", default = FALSE, help = "Also generate HTML files (for development/testing)")
+parser$add_argument("--output-mode", type = "character", default = "plot", help = "Output mode: 'plot' (default) for Plotly JSON, 'data' for raw data frames")
 
 # Parse arguments
 args <- parser$parse_args()
@@ -313,9 +314,10 @@ get_api_url <- function() {
   }
 }
 
-# Generate single plot
+# Generate single plot OR extract data frames (depending on output_mode)
 generate_single_plot <- function(city, scenario, outcome, statistic, facet_spec,
-                                 scenario_simset, baseline_simset, config, output_dir) {
+                                 scenario_simset, baseline_simset, config, output_dir,
+                                 output_mode = "plot") {
   tryCatch(
     {
       # Create settings object
@@ -346,6 +348,15 @@ generate_single_plot <- function(city, scenario, outcome, statistic, facet_spec,
         load_baseline_simulation <<- function(id, settings) baseline_simset
       }
 
+      # === DATA OUTPUT MODE ===
+      if (output_mode == "data") {
+        return(generate_data_output(
+          city, scenario, outcome, statistic, facet_spec,
+          scenario_simset, baseline_simset, config, output_dir
+        ))
+      }
+
+      # === PLOT OUTPUT MODE (existing behavior) ===
       # Prepare plot data
       plot_data <- prepare_plot_data(
         current_settings = current_settings,
@@ -439,10 +450,118 @@ generate_single_plot <- function(city, scenario, outcome, statistic, facet_spec,
   )
 }
 
+# Generate data output (data frames instead of plots)
+# Calls prepare_plot_local directly to get df.sim and df.truth
+generate_data_output <- function(city, scenario, outcome, statistic, facet_spec,
+                                 scenario_simset, baseline_simset, config, output_dir) {
+  tryCatch(
+    {
+      # Build simset list with proper labels
+      intervention_label <- "Intervention"
+      if (!is.null(config) && !is.null(config[[scenario]])) {
+        intervention_label <- config[[scenario]]$label %||% scenario
+      } else {
+        intervention_label <- scenario
+      }
+
+      sim_list <- list()
+      if (!is.null(baseline_simset)) {
+        sim_list[["Baseline"]] <- baseline_simset
+      }
+      sim_list[[intervention_label]] <- scenario_simset
+
+      # Get data manager
+      data_manager <- get.default.data.manager()
+
+      # Call prepare_plot_local directly to get data frames
+      prepared_data <- prepare_plot_local(
+        simset.list = sim_list,
+        outcomes = outcome,
+        facet.by = facet_spec,
+        data.manager = data_manager,
+        summary.type = statistic,
+        plot.which = "sim.and.data",
+        append.url = TRUE,
+        show.data.pull.error = FALSE
+      )
+
+      # Convert data frames to JSON-friendly format
+      sim_data <- NULL
+      if (!is.null(prepared_data$df.sim) && nrow(prepared_data$df.sim) > 0) {
+        # Select relevant columns and convert to list of records
+        sim_cols <- c("year", "value", "simset", "outcome", "outcome.display.name")
+        if ("value.lower" %in% names(prepared_data$df.sim)) sim_cols <- c(sim_cols, "value.lower", "value.upper")
+        if ("facet.by1" %in% names(prepared_data$df.sim)) sim_cols <- c(sim_cols, "facet.by1")
+        if ("stratum" %in% names(prepared_data$df.sim)) sim_cols <- c(sim_cols, "stratum")
+        # Include sim column for individual.simulation statistic (identifies each simulation run)
+        if ("sim" %in% names(prepared_data$df.sim)) sim_cols <- c(sim_cols, "sim")
+
+        sim_cols <- intersect(sim_cols, names(prepared_data$df.sim))
+        sim_data <- prepared_data$df.sim[, sim_cols, drop = FALSE]
+      }
+
+      obs_data <- NULL
+      if (!is.null(prepared_data$df.truth) && nrow(prepared_data$df.truth) > 0) {
+        # Select relevant columns
+        obs_cols <- c("year", "value", "source", "outcome", "outcome.display.name")
+        if ("facet.by1" %in% names(prepared_data$df.truth)) obs_cols <- c(obs_cols, "facet.by1")
+        if ("data_url" %in% names(prepared_data$df.truth)) obs_cols <- c(obs_cols, "data_url")
+        if ("stratum" %in% names(prepared_data$df.truth)) obs_cols <- c(obs_cols, "stratum")
+
+        obs_cols <- intersect(obs_cols, names(prepared_data$df.truth))
+        obs_data <- prepared_data$df.truth[, obs_cols, drop = FALSE]
+      }
+
+      # Build output structure
+      output_data <- list(
+        sim = sim_data,
+        obs = obs_data,
+        metadata = list(
+          city = city,
+          scenario = scenario,
+          outcome = outcome,
+          statistic = statistic,
+          facet = if (is.null(facet_spec)) "none" else paste(facet_spec, collapse = "+"),
+          y_label = prepared_data$details$y.label,
+          plot_title = prepared_data$details$plot.title,
+          has_baseline = !is.null(baseline_simset),
+          generation_time = format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+        )
+      )
+
+      # Add outcome metadata if available
+      if (!is.null(prepared_data$details$outcome.metadata.list[[outcome]])) {
+        output_data$metadata$outcome_metadata <- list(
+          display_name = prepared_data$details$outcome.metadata.list[[outcome]]$display.name,
+          units = prepared_data$details$outcome.metadata.list[[outcome]]$units,
+          display_as_percent = prepared_data$details$outcome.metadata.list[[outcome]]$display.as.percent
+        )
+      }
+
+      # Generate output path
+      paths <- generate_paths(city, scenario, outcome, statistic, facet_spec, output_dir)
+
+      # Write JSON
+      writeLines(toJSON(output_data, auto_unbox = TRUE, pretty = TRUE, na = "null"), paths$json)
+
+      return(list(
+        success = TRUE,
+        paths = paths,
+        data = output_data
+      ))
+    },
+    error = function(e) {
+      return(list(success = FALSE, error = e$message))
+    }
+  )
+}
+
 # Main batch processing function
 process_batch <- function() {
   start_time <- Sys.time()
-  log_msg("Starting batch plot generation")
+  output_type <- if (args$output_mode == "data") "data extraction" else "plot generation"
+  log_msg(sprintf("Starting batch %s", output_type))
+  log_msg(sprintf("Output mode: %s", args$output_mode))
   log_msg(sprintf("Start time: %s", format(start_time, "%Y-%m-%d %H:%M:%S")))
 
   # Load configuration
@@ -578,10 +697,11 @@ process_batch <- function() {
               plot_count, total_plots, job$city, scenario, outcome, statistic, facet_str
             ))
 
-            # Generate the plot
+            # Generate the plot or data
             result <- generate_single_plot(
               job$city, scenario, outcome, statistic, facet_spec,
-              scenario_simset, baseline_simset, scenario_options_config, args$output_dir
+              scenario_simset, baseline_simset, scenario_options_config, args$output_dir,
+              output_mode = args$output_mode
             )
 
             if (result$success) {

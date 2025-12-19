@@ -77,8 +77,13 @@ RUN echo "📦 Pre-installing problematic packages from source..." && \
   R -e "renv::install('sf', type = 'source')" && \
   echo "✅ sf installed from source."
 
+# Snapshot to update lockfile with the versions we just installed
+# This prevents renv::restore from trying to downgrade them
+RUN echo "📸 Updating lockfile with installed versions..." && \
+  R -e "renv::snapshot(packages = c('sf', 'units', 'gert', 'V8'), update = TRUE)" && \
+  echo "✅ Lockfile updated"
 
-# Install remaining packages as binaries (symlinks handle lib version mismatches)
+# Install remaining packages as binaries
 RUN  echo "📦 Installing remaining packages as binaries..." && \
   R -e "renv::restore()" && \
   echo "✅ All packages installed successfully"

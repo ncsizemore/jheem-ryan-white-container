@@ -42,8 +42,10 @@ RUN apt-get update && apt-get install -y \
   && ln -s "/usr/lib/${ARCH_LIB_DIR}/libgit2.so.1.9" "/usr/lib/${ARCH_LIB_DIR}/libgit2.so.1.5" \
   # Symlink for V8 (libnode)
   && ln -s "/usr/lib/${ARCH_LIB_DIR}/libnode.so.115" "/usr/lib/${ARCH_LIB_DIR}/libnode.so.108" \
-  # Symlink for sf (libgdal) - Debian Trixie has .35, RSPM binary wants .32
-  && ln -s "/usr/lib/${ARCH_LIB_DIR}/libgdal.so.35" "/usr/lib/${ARCH_LIB_DIR}/libgdal.so.32"
+  # Symlink for sf (libgdal) - find actual version and link to .32 that RSPM expects
+  && GDAL_ACTUAL=$(ls /usr/lib/${ARCH_LIB_DIR}/libgdal.so.* 2>/dev/null | head -1) \
+  && echo "Found GDAL: ${GDAL_ACTUAL}" \
+  && if [ -n "${GDAL_ACTUAL}" ]; then ln -sf "${GDAL_ACTUAL}" "/usr/lib/${ARCH_LIB_DIR}/libgdal.so.32"; fi
 
 # After installing Java, reconfigure R to recognize it.
 # This must be done BEFORE any R packages that need Java are installed.

@@ -41,7 +41,9 @@ RUN apt-get update && apt-get install -y \
   # Symlink for gert (libgit2)
   && ln -s "/usr/lib/${ARCH_LIB_DIR}/libgit2.so.1.9" "/usr/lib/${ARCH_LIB_DIR}/libgit2.so.1.5" \
   # Symlink for V8 (libnode)
-  && ln -s "/usr/lib/${ARCH_LIB_DIR}/libnode.so.115" "/usr/lib/${ARCH_LIB_DIR}/libnode.so.108"
+  && ln -s "/usr/lib/${ARCH_LIB_DIR}/libnode.so.115" "/usr/lib/${ARCH_LIB_DIR}/libnode.so.108" \
+  # Symlink for sf (libgdal) - Debian Trixie has .35, RSPM binary wants .32
+  && ln -s "/usr/lib/${ARCH_LIB_DIR}/libgdal.so.35" "/usr/lib/${ARCH_LIB_DIR}/libgdal.so.32"
 
 # After installing Java, reconfigure R to recognize it.
 # This must be done BEFORE any R packages that need Java are installed.
@@ -74,10 +76,9 @@ RUN echo "📦 Pre-installing problematic packages from source..." && \
   echo "✅ sf installed from source."
 
 
-# Install packages: problematic ones from source, others as binaries
-# Exclude packages that were pre-installed (RSPM binaries need different system lib versions)
+# Install remaining packages as binaries (symlinks handle lib version mismatches)
 RUN  echo "📦 Installing remaining packages as binaries..." && \
-  R -e "renv::restore(exclude = c('sf', 'units', 'gert', 'V8'))" && \
+  R -e "renv::restore()" && \
   echo "✅ All packages installed successfully"
 
 # Test that all packages are working

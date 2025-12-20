@@ -491,7 +491,9 @@ generate_data_output <- function(city, scenario, outcome, statistic, facet_spec,
         # Select relevant columns and convert to list of records
         sim_cols <- c("year", "value", "simset", "outcome", "outcome.display.name")
         if ("value.lower" %in% names(prepared_data$df.sim)) sim_cols <- c(sim_cols, "value.lower", "value.upper")
-        if ("facet.by1" %in% names(prepared_data$df.sim)) sim_cols <- c(sim_cols, "facet.by1")
+        # Include ALL facet.by columns (facet.by1, facet.by2, facet.by3, etc.) for multi-dimensional faceting
+        facet_cols <- grep("^facet\\.by[0-9]+$", names(prepared_data$df.sim), value = TRUE)
+        if (length(facet_cols) > 0) sim_cols <- c(sim_cols, facet_cols)
         if ("stratum" %in% names(prepared_data$df.sim)) sim_cols <- c(sim_cols, "stratum")
         # Include sim column for individual.simulation statistic (identifies each simulation run)
         if ("sim" %in% names(prepared_data$df.sim)) sim_cols <- c(sim_cols, "sim")
@@ -504,7 +506,9 @@ generate_data_output <- function(city, scenario, outcome, statistic, facet_spec,
       if (!is.null(prepared_data$df.truth) && nrow(prepared_data$df.truth) > 0) {
         # Select relevant columns
         obs_cols <- c("year", "value", "source", "outcome", "outcome.display.name")
-        if ("facet.by1" %in% names(prepared_data$df.truth)) obs_cols <- c(obs_cols, "facet.by1")
+        # Include ALL facet.by columns for multi-dimensional faceting
+        facet_cols_obs <- grep("^facet\\.by[0-9]+$", names(prepared_data$df.truth), value = TRUE)
+        if (length(facet_cols_obs) > 0) obs_cols <- c(obs_cols, facet_cols_obs)
         if ("data_url" %in% names(prepared_data$df.truth)) obs_cols <- c(obs_cols, "data_url")
         if ("stratum" %in% names(prepared_data$df.truth)) obs_cols <- c(obs_cols, "stratum")
 

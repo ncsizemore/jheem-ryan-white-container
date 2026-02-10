@@ -1,6 +1,20 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+R container for extracting outcome data from JHEEM simulation files. Used by GitHub Actions workflows in jheem-backend to generate JSON data for the portal.
+
+## Current Status
+
+**Primary usage:** Batch mode via GitHub Actions workflows (not Lambda)
+- Workflows pull from `ghcr.io/ncsizemore/jheem-ryan-white-model:1.0.0`
+- Container extracts outcomes from .Rdata simulation files → JSON
+- Used for MSA (31 cities) and AJPH (11 states) analyses
+
+**Planned restructuring:** See `jheem-portal/docs/ARCHITECTURE-REFACTOR-PLAN.md`
+- Shared base image (`jheem-base`) with common R deps
+- Model containers become thin layers (~30 lines vs ~220)
+- Repo may be renamed for consistency with other containers
+
+**Dormant features:** Lambda handler and serverless code are preserved for potential future custom simulation features but not currently in use.
 
 ## Common Development Commands
 
@@ -109,4 +123,9 @@ Plotting system generates multiple output formats:
 
 ## Deployment Context
 
-This is a containerized HIV simulation model designed for AWS Lambda deployment. The container generates HIV intervention plots for Ryan White programs using the JHEEM2 simulation engine. The current setup supports local testing with plans for serverless integration.
+This container is currently used by GitHub Actions workflows (jheem-backend) in batch mode to extract outcome data from simulation files. The workflows:
+1. Download simulation .Rdata files from GitHub Releases
+2. Run this container with `batch` command to extract outcomes → JSON
+3. Upload JSON to S3/CloudFront for portal consumption
+
+The Lambda handler (`lambda_handler.R`) and serverless infrastructure are preserved for potential future custom simulation features where users could run simulations with custom parameters.

@@ -23,7 +23,10 @@ RUN cd jheem_analyses && mkdir -p cached && \
 
 # Copy google_mobility_data (not in official cache yet)
 COPY cached/google_mobility_data.Rdata jheem_analyses/cached/
-COPY create_ryan_white_workspace.R ./
+
+# Create workspace_build subdirectory (script expects ../jheem_analyses from there)
+RUN mkdir -p workspace_build
+COPY create_ryan_white_workspace.R workspace_build/
 
 # Apply path fixes for container environment
 RUN sed -i 's/USE.JHEEM2.PACKAGE = F/USE.JHEEM2.PACKAGE = T/' \
@@ -31,9 +34,10 @@ RUN sed -i 's/USE.JHEEM2.PACKAGE = F/USE.JHEEM2.PACKAGE = T/' \
     sed -i 's|../../cached/ryan.white.data.manager.rdata|../jheem_analyses/cached/ryan.white.data.manager.rdata|' \
         jheem_analyses/applications/ryan_white/ryan_white_specification.R
 
-# Create workspace
-RUN Rscript create_ryan_white_workspace.R ryan_white_workspace.RData && \
-    test -f ryan_white_workspace.RData
+# Create workspace (run from workspace_build where ../jheem_analyses exists)
+RUN cd workspace_build && \
+    Rscript create_ryan_white_workspace.R ../ryan_white_workspace.RData && \
+    test -f ../ryan_white_workspace.RData
 
 # --- Final image ---
 FROM base AS final

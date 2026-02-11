@@ -35,8 +35,9 @@ RUN sed -i 's/USE.JHEEM2.PACKAGE = F/USE.JHEEM2.PACKAGE = T/' \
         jheem_analyses/applications/ryan_white/ryan_white_specification.R
 
 # Create workspace (run from workspace_build where ../jheem_analyses exists)
+# RENV_PROJECT tells renv to use packages from /app
 RUN cd workspace_build && \
-    Rscript create_ryan_white_workspace.R ../ryan_white_workspace.RData && \
+    RENV_PROJECT=/app Rscript create_ryan_white_workspace.R ../ryan_white_workspace.RData && \
     test -f ../ryan_white_workspace.RData
 
 # --- Final image ---

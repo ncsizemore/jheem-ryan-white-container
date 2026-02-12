@@ -23,22 +23,18 @@ RUN cd jheem_analyses && mkdir -p cached && \
 
 # Copy google_mobility_data (not in official cache yet)
 COPY cached/google_mobility_data.Rdata jheem_analyses/cached/
-
-# Create workspace_build subdirectory (script expects ../jheem_analyses from there)
-RUN mkdir -p workspace_build
-COPY create_ryan_white_workspace.R workspace_build/
+COPY create_ryan_white_workspace.R ./
 
 # Apply path fixes for container environment
+# Path is now ./jheem_analyses (not ../jheem_analyses)
 RUN sed -i 's/USE.JHEEM2.PACKAGE = F/USE.JHEEM2.PACKAGE = T/' \
         jheem_analyses/use_jheem2_package_setting.R && \
-    sed -i 's|../../cached/ryan.white.data.manager.rdata|../jheem_analyses/cached/ryan.white.data.manager.rdata|' \
+    sed -i 's|../../cached/ryan.white.data.manager.rdata|./jheem_analyses/cached/ryan.white.data.manager.rdata|' \
         jheem_analyses/applications/ryan_white/ryan_white_specification.R
 
-# Create workspace (run from workspace_build where ../jheem_analyses exists)
-# Must explicitly source renv/activate.R since we're in a subdirectory
-RUN cd workspace_build && \
-    R -e "source('/app/renv/activate.R'); source('create_ryan_white_workspace.R')" --args ../ryan_white_workspace.RData && \
-    test -f ../ryan_white_workspace.RData
+# Create workspace - run from /app, pass jheem_analyses path as argument
+RUN Rscript create_ryan_white_workspace.R ryan_white_workspace.RData ./jheem_analyses && \
+    test -f ryan_white_workspace.RData
 
 # --- Final image ---
 FROM base AS final

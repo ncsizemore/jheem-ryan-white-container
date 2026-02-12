@@ -1,28 +1,27 @@
-# create_ryan_white_workspace.R - Clean version with proper directory structure
-# Runs from subdirectory where ../jheem_analyses/ naturally exists
+# create_ryan_white_workspace.R - Creates Ryan White workspace for container
+# Usage: Rscript create_ryan_white_workspace.R <output_file> [jheem_analyses_path]
 
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) == 0) {
-  stop("Usage: Rscript create_ryan_white_workspace.R <output_workspace_file.RData>", call. = FALSE)
+  stop("Usage: Rscript create_ryan_white_workspace.R <output_file> [jheem_analyses_path]", call. = FALSE)
 }
 output_file <- args[1]
+jheem_analyses_path <- if (length(args) >= 2) args[2] else "../jheem_analyses"
 
-cat("🔧 Starting Ryan White workspace creation (clean directory structure)\n")
-cat("📁 Output file:", output_file, "\n")
-cat("📁 Working directory:", getwd(), "\n")
+cat("Starting Ryan White workspace creation\n")
+cat("Output file:", output_file, "\n")
+cat("jheem_analyses path:", jheem_analyses_path, "\n")
+cat("Working directory:", getwd(), "\n")
 
 start_time <- Sys.time()
 
-# Verify we're in the expected directory structure
-if (!dir.exists("../jheem_analyses")) {
-  cat("❌ Expected directory structure not found\n")
-  cat("📁 Current directory:", getwd(), "\n")
-  cat("🔍 Looking for: ../jheem_analyses/\n")
-  cat("💡 This script should run from a subdirectory with jheem_analyses/ at parent level\n")
+# Verify jheem_analyses directory exists
+if (!dir.exists(jheem_analyses_path)) {
+  cat("ERROR: jheem_analyses not found at:", jheem_analyses_path, "\n")
   quit(status = 1)
 }
 
-cat("✅ Directory structure verified: ../jheem_analyses/ found\n")
+cat("Directory verified:", jheem_analyses_path, "\n")
 
 # 1. Load jheem2 and export internal functions
 cat("📦 Loading jheem2 package...\n")
@@ -46,8 +45,8 @@ for (fn_name in internal_fns) {
 cat("✅", functions_exported_count, "internal functions exported to .GlobalEnv\n")
 
 
-use_package_file <- "../jheem_analyses/use_jheem2_package_setting.R"
-ryan_white_spec_file <- "../jheem_analyses/applications/ryan_white/ryan_white_specification.R"
+use_package_file <- file.path(jheem_analyses_path, "use_jheem2_package_setting.R")
+ryan_white_spec_file <- file.path(jheem_analyses_path, "applications/ryan_white/ryan_white_specification.R")
 
 
 
@@ -55,7 +54,7 @@ ryan_white_spec_file <- "../jheem_analyses/applications/ryan_white/ryan_white_sp
 cat("🧬 Loading Ryan White model specification...\n")
 tryCatch(
   {
-    source("../jheem_analyses/applications/ryan_white/ryan_white_specification.R")
+    source(ryan_white_spec_file)
     cat("✅ Ryan White specification loaded successfully\n")
   },
   error = function(e) {
@@ -68,7 +67,8 @@ tryCatch(
 cat("🌐 Loading web data manager for container use...\n")
 tryCatch(
   {
-    WEB.DATA.MANAGER <- load.data.manager("../jheem_analyses/cached/ryan.white.web.data.manager.rdata", set.as.default = TRUE)
+    web_dm_path <- file.path(jheem_analyses_path, "cached/ryan.white.web.data.manager.rdata")
+    WEB.DATA.MANAGER <- load.data.manager(web_dm_path, set.as.default = TRUE)
     cat("✅ Web data manager loaded (RW.DATA.MANAGER kept for compatibility)\n")
   },
   error = function(e) {

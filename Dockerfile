@@ -15,6 +15,10 @@ WORKDIR /app
 RUN git clone https://github.com/tfojo1/jheem_analyses.git && \
     cd jheem_analyses && git checkout ${JHEEM_ANALYSES_COMMIT}
 
+# Create symlink so ../jheem_analyses paths resolve from /app
+# This handles all the relative path assumptions in jheem_analyses code
+RUN ln -s /app/jheem_analyses /jheem_analyses
+
 # Download cached data files from OneDrive using metadata
 RUN cd jheem_analyses && mkdir -p cached && \
     R --slave -e "load('commoncode/data_manager_cache_metadata.Rdata'); \
@@ -26,14 +30,14 @@ COPY cached/google_mobility_data.Rdata jheem_analyses/cached/
 COPY create_ryan_white_workspace.R ./
 
 # Apply path fixes for container environment
-# Path is now ./jheem_analyses (not ../jheem_analyses)
+# The symlink makes ../jheem_analyses work, so we patch to that path
 RUN sed -i 's/USE.JHEEM2.PACKAGE = F/USE.JHEEM2.PACKAGE = T/' \
         jheem_analyses/use_jheem2_package_setting.R && \
-    sed -i 's|../../cached/ryan.white.data.manager.rdata|./jheem_analyses/cached/ryan.white.data.manager.rdata|' \
+    sed -i 's|../../cached/ryan.white.data.manager.rdata|../jheem_analyses/cached/ryan.white.data.manager.rdata|' \
         jheem_analyses/applications/ryan_white/ryan_white_specification.R
 
-# Create workspace - run from /app, pass jheem_analyses path as argument
-RUN Rscript create_ryan_white_workspace.R ryan_white_workspace.RData ./jheem_analyses && \
+# Create workspace - run from /app, use ../jheem_analyses (via symlink)
+RUN Rscript create_ryan_white_workspace.R ryan_white_workspace.RData ../jheem_analyses && \
     test -f ryan_white_workspace.RData
 
 # --- Final image ---

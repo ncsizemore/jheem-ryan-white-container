@@ -2,7 +2,7 @@
 # JHEEM Ryan White Model (MSA + AJPH)
 # Thin wrapper around jheem-base - only adds workspace creation
 # =============================================================================
-ARG BASE_VERSION=1.1.0
+ARG BASE_VERSION=1.1.1
 FROM ghcr.io/ncsizemore/jheem-base:${BASE_VERSION} AS base
 
 # --- Build workspace ---

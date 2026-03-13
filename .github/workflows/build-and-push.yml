@@ -7,6 +7,13 @@ on:
   pull_request:
     branches: [main, master]
   workflow_dispatch:
+    inputs:
+      base_version:
+        description: 'jheem-base version (e.g., 1.2.0). Leave empty for default.'
+        required: false
+        default: ''
+  repository_dispatch:
+    types: [base-image-updated]
 
 env:
   REGISTRY: ghcr.io
@@ -22,6 +29,21 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Determine base version
+        id: base
+        run: |
+          # Priority: dispatch payload > workflow input > default
+          if [ -n "${{ github.event.client_payload.base_version }}" ]; then
+            echo "version=${{ github.event.client_payload.base_version }}" >> $GITHUB_OUTPUT
+            echo "Using base version from dispatch: ${{ github.event.client_payload.base_version }}"
+          elif [ -n "${{ github.event.inputs.base_version }}" ]; then
+            echo "version=${{ github.event.inputs.base_version }}" >> $GITHUB_OUTPUT
+            echo "Using base version from input: ${{ github.event.inputs.base_version }}"
+          else
+            echo "version=1.1.1" >> $GITHUB_OUTPUT
+            echo "Using default base version: 1.1.1"
+          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -42,7 +64,7 @@ jobs:
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ github.event_name != 'pull_request' }}
             type=sha,prefix=
 
       - name: Build and push
@@ -55,5 +77,5 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            BASE_VERSION=1.1.1
+            BASE_VERSION=${{ steps.base.outputs.version }}
             JHEEM_ANALYSES_COMMIT=fc3fe1d2d5f859b322414da8b11f0182e635993b
